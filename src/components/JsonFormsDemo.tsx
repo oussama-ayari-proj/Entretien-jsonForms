@@ -1,6 +1,6 @@
 
 
-import React, { FC, useMemo, useState } from 'react';
+import { FC, useMemo, useState } from 'react';
 import { JsonForms } from '@jsonforms/react';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -8,9 +8,9 @@ import {
   materialCells,
   materialRenderers,
 } from '@jsonforms/material-renderers';
-import PourcentageControl from './PourcentageControl';
-import PourcentageControlTester from './PourcentageControlTester'
 import { schema, uischema } from '../jsonFormsConfig/formsConfig';
+
+import CustomArrayControl, { customArrayControlTester } from './CustomArrayControl';
 
 const classes = {
   container: {
@@ -41,71 +41,26 @@ const classes = {
 const initialData = {
   tableau: [
     {
-      name:"",
-      Pourcentage: 0,
+      Pays:"",
+      Pourcentage: '',
     },
   ],
-  nom: ""
+  nom: "",
 };
 
-const renderers = [
-  ...materialRenderers,
-  { tester: PourcentageControlTester, renderer: PourcentageControl }, 
-];
+
 
 export const JsonFormsDemo: FC = () => {
   const [data, setData] = useState<object>(initialData);
-  const [error, setError] = useState<string | null>(null);
-  const [isFormValid, setIsFormValid] = useState<boolean>(false); 
 
+  const handleChange = ({ data }: { data: any[]}) => {
+    setData(data);
+  };
   const stringifiedData = useMemo(() => JSON.stringify(data, null, 2), [data]);
 
-  const validateForm = (data: any) => {
-    let sum = 0;
-    let allFilled = true;
-
-    for (let comment of data.tableau) {
-      const pourcentage = comment.Pourcentage;
-      const name = comment.name;
-      if (pourcentage === undefined || pourcentage === null || pourcentage === '') {
-        allFilled = false;
-        break;
-      }
-      if (name === undefined || name === null || name === '') {
-        allFilled = false;
-        break;
-      }
-      sum += pourcentage;
-    }
-
-    if (!allFilled) {
-      setError('Tout les champs doivent être remplis.');
-      setIsFormValid(false);
-      return false;
-    }
-
-    if (sum !== 100) {
-      setError('La somme des pourcentage doivent être égale à 100.');
-      setIsFormValid(false);
-      return false;
-    }
-
-    setError(null);
-    setIsFormValid(true);
-    return true;
-  };
-
-  const handleSubmit = () => {
-    if (validateForm(data)) {
-      // Envoie des données du formulaire après validation
-      console.log('Données finales du formulaire:', data);
-    }
-  };
-
-  const clearData = () => {
-    setData(initialData);
-    setIsFormValid(false); //
-  };
+  function clearData(): void {
+    setData({});
+  }
 
   return (
     <>
@@ -123,37 +78,23 @@ export const JsonFormsDemo: FC = () => {
           data-testid="clear-data">
           Effacer tout
         </Button>
-
-        <Button
-          style={classes.resetButton}
-          onClick={handleSubmit}
-          color="primary"
-          variant="contained"
-          data-testid="submit-data"
-          disabled={!isFormValid} // Disable Submit if form is not valid
-        >
-          Envoyer
-        </Button>
         </div>
         
 
-        {error && (
-          <Typography variant="body1" color="error">
-            {error}
-          </Typography>
-        )}
+        
 
         <JsonForms
           schema={schema}
           uischema={uischema}
           data={data}
-          renderers={renderers}
+          renderers={[
+            ...materialRenderers,
+            { tester : customArrayControlTester, renderer: CustomArrayControl} ,
+          ]}
           cells={materialCells}
-          onChange={({ data }) => {
-            setData(data);
-            validateForm(data); // Validate on data change
-          }}
+          onChange={handleChange}
         />
+        
       </div>
     </>
   );
