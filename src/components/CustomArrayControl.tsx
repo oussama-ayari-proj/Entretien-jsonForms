@@ -9,7 +9,7 @@ const CustomArrayControl = ({ data = [], handleChange, path }: ControlProps) => 
   const [error, setError] = useState<string | null>(null);
   const [isFormValid, setIsFormValid] = useState(false);
 
-  const percentageRegex = /^(100|[1-9]?\d)$/;
+  const percentageRegex = /^(100|[0-9]?\d)$/;
 
   const checkFormValidity = () => {
     const allFieldsFilled = data.every((item: any) => item.Pays && percentageRegex.test(item.Pourcentage || ''));
